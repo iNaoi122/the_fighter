@@ -1,0 +1,48 @@
+import sys
+from Fighter_class import *
+
+pygame.init()
+clock = pygame.time.Clock()
+screen = pygame.display.set_mode((600, 600))
+add_enemy = pygame.USEREVENT + 1
+pygame.time.set_timer(add_enemy, 100)
+player = Player()
+enemies = pygame.sprite.Group()
+all_sprites = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
+all_sprites.add(player)
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
+            if event.key == pygame.K_SPACE:
+                bullet = Bullet(player.pos_x(), player.pos_y())
+                bullets.add(bullet)
+                all_sprites.add(bullet)
+
+        elif event.type == add_enemy:
+            enemy = Enemy()
+            enemies.add(enemy)
+            all_sprites.add(enemy)
+
+    key = pygame.key.get_pressed()
+    player.up(key)
+    enemies.update()
+    bullets.update()
+    clock.tick(60)
+    screen.fill((0, 0, 0))
+    for entity in all_sprites:
+        screen.blit(entity.surf, entity.rect)
+
+    if pygame.sprite.spritecollideany(player, enemies):
+        print("Game over")
+        pygame.quit()
+        sys.exit()
+    pygame.sprite.groupcollide(bullets, enemies, True, True)
+    pygame.display.flip()
