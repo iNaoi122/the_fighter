@@ -46,3 +46,91 @@ class Player(pygame.sprite.Sprite):
 
     def pos_y(self):
         return self.rect.y
+
+    # def boost(self, i):
+
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Enemy, self).__init__()
+        self.surf = pygame.Surface((10, 10))
+        self.surf.fill((255, 255, 255))
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(0, X_max),
+                0
+            )
+        )
+        self.speed = 5
+
+    def update(self):
+        self.rect.move_ip(0, self.speed)
+        if self.rect.bottom > Y_max:
+            self.kill()
+
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x_0, y_0, double=False):
+        super(Bullet, self).__init__()
+        self.surf = pygame.Surface((10, 10))
+        self.surf.fill((255, 255, 255))
+        if double:
+            self.rect = self.surf.get_rect(
+                center=(x_0 + 10, y_0)
+            )
+            self.rect = self.surf.get_rect(
+                center=(x_0 + 30, y_0)
+            )
+        else:
+            self.rect = self.surf.get_rect(
+                center=(x_0 + 20, y_0)
+            )
+        self.speed = 10
+
+    def update(self):
+        self.rect.move_ip(0, -self.speed)
+        if self.rect.top < 0:
+            self.kill()
+
+
+class Boost(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Boost, self).__init__()
+        self.surf = pygame.Surface((10, 10))
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(0, X_max),
+                0
+            )
+        )
+        self.speed = 5
+# 1 - health 2 - double bullet
+    # 3 - x2 - score
+
+    def update(self):
+        self.rect.move_ip(0, self.speed)
+        if self.rect.bottom > Y_max:
+            self.kill()
+
+    def destroy(self):
+        self.kill()
+
+
+class Health(Boost):
+    def __init__(self):
+        super(Health, self).__init__()
+        self.surf = pygame.Surface((10, 10))
+        self.surf.fill((255, 0, 0))
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(0, X_max),
+                0
+            )
+        )
+
+
+class Rise_bullet(Boost):
+    def __init__(self):
+        super(Rise_bullet, self).__init__()
+        self.surf.fill((255, 0, 255))
+
