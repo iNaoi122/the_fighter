@@ -1,17 +1,29 @@
 import sys
 from Fighter_class import *
+import time
 
 pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((600, 600))
 add_enemy = pygame.USEREVENT + 1
+add_boost = pygame.USEREVENT + 2
+
+pygame.time.set_timer(add_boost, 500)
 pygame.time.set_timer(add_enemy, 100)
+
 player = Player()
+
+bullets_boosts = pygame.sprite.Group()
+health_boosts = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
+
 all_sprites.add(player)
+double = False
+timer = 0
 while True:
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -21,7 +33,15 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE and double == True:
+                bullet = Bullet(player.pos_x() - 10, player.pos_y())
+                bullet_2 = Bullet(player.pos_x() + 10, player.pos_y())
+                bullets.add(bullet_2)
+                bullets.add(bullet)
+                all_sprites.add(bullet)
+                all_sprites.add(bullet_2)
+
+            elif event.key == pygame.K_SPACE:
                 bullet = Bullet(player.pos_x(), player.pos_y())
                 bullets.add(bullet)
                 all_sprites.add(bullet)
@@ -31,10 +51,26 @@ while True:
             enemies.add(enemy)
             all_sprites.add(enemy)
 
+        elif event.type == add_boost:
+            i = random.randint(1, 3)
+            if i == 1:
+                boost = Health()
+                health_boosts.add(boost)
+                all_sprites.add(boost)
+            if i == 2:
+                boost = Rise_bullet()
+                bullets_boosts.add(boost)
+                all_sprites.add(boost)
+
     key = pygame.key.get_pressed()
+
     player.up(key)
+
     enemies.update()
     bullets.update()
+    health_boosts.update()
+    bullets_boosts.update()
+
     clock.tick(60)
     screen.fill((0, 0, 0))
     for entity in all_sprites:
@@ -44,5 +80,14 @@ while True:
         print("Game over")
         pygame.quit()
         sys.exit()
+   
+    if pygame.sprite.spritecollide(player, health_boosts, True):
+        print("You healthy")
+    if pygame.sprite.spritecollide(player, bullets_boosts, True):
+        print("You boosted bullets")
+        double = True
+        timer = time.perf_counter()
+    if time.perf_counter() - timer >= 2:
+        double = False
     pygame.sprite.groupcollide(bullets, enemies, True, True)
     pygame.display.flip()
