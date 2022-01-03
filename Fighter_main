@@ -2,6 +2,18 @@ import sys
 from Fighter_class import *
 import time
 import pygame.freetype
+import pygame_menu
+
+
+def game_over_screen(score):
+    pygame.init()
+    screen = pygame.display.set_mode((600, 600))
+    game_over = pygame_menu.Menu("Game over", 400, 300, theme=pygame_menu.themes.THEME_DEFAULT)
+    game_over.add.label(f"Score: {score}")
+
+    game_over.add.button("Quit", pygame_menu.events.EXIT)
+
+    game_over.mainloop(screen)
 
 
 def game_cycle():
@@ -119,9 +131,7 @@ def game_cycle():
                 print(Score)
                 print(time.perf_counter() - time_all)
                 print(bonus)
-                pygame.quit()
-                sys.exit()
-                
+                game_over_screen(round(Score))
             else:
                 player.health = player.health - 1
                 print("You damaged")
