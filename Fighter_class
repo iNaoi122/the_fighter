@@ -2,6 +2,7 @@ import pygame
 import random
 import pygame.freetype
 
+
 X_max = 600
 Y_max = 600
 speed = int(10)
@@ -49,18 +50,24 @@ class Player(pygame.sprite.Sprite):
     def pos_y(self):
         return self.rect.y
 
+    def shield(self):
+        pass
+
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super(Enemy, self).__init__()
-        self.surf = pygame.Surface((10, 10))
-        self.surf.fill((255, 255, 255))
+        self.surf = pygame.transform.scale(pygame.image.load("3573081378.png").convert(), (50, 50))
+
+        self.surf.set_colorkey((0, 0, 0))
         self.rect = self.surf.get_rect(
             center=(
                 random.randint(0, X_max),
                 0
             )
         )
+        self.radius = 14
+        # pygame.draw.circle(self.surf, (255, 0, 0), (25, 25), self.radius)
         self.speed = 5
 
     def update(self):
@@ -72,8 +79,8 @@ class Enemy(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x_0, y_0, double=False):
         super(Bullet, self).__init__()
-        self.surf = pygame.Surface((10, 10))
-        self.surf.fill((255, 255, 255))
+        self.surf = pygame.Surface((4, 10))
+        self.surf.fill((0, 0, 255))
         if double:
             self.rect = self.surf.get_rect(
                 center=(x_0 + 10, y_0)
@@ -156,7 +163,7 @@ class Button:
 
         font = pygame.freetype.SysFont("Arial", 40)
 
-        font.render_to(area, (self.x, self.y), "Start", (240, 255, 240))
+        font.render_to(area, (self.x + 10, self.y + (self.size_y - 40) / 2), "Start", (240, 255, 240))
 
     def click(self, pos):
         if self.x < pos[0] < self.x + self.size_x:
@@ -164,3 +171,35 @@ class Button:
                 return True
 
         return False
+
+
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, center):
+        pygame.sprite.Sprite.__init__(self)
+        self.ex_anim = []
+        for i in range(9):
+            filename = 'regularExplosion0{}.png'.format(i)
+            img = pygame.image.load(f"Explosive/{filename}").convert()
+            img = pygame.transform.scale(img, (50, 50))
+            img.set_colorkey((0, 0, 0))
+            self.ex_anim.append(img)
+        self.image = self.ex_anim[0]
+        self.rect = self.image.get_rect()
+
+        self.rect.center = center
+        self.frame = 0
+        self.last_update = pygame.time.get_ticks()
+        self.frame_rate = 50
+
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame_rate:
+            self.last_update = now
+            self.frame += 1
+            if self.frame == len(self.ex_anim):
+                self.kill()
+            else:
+                center = self.rect.center
+                self.image = self.ex_anim[self.frame]
+                self.rect = self.image.get_rect()
+                self.rect.center = center
