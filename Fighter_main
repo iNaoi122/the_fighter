@@ -12,7 +12,7 @@ def game_over_screen(score):
     game_over.add.label(f"Score: {score}")
 
     game_over.add.button("Quit", pygame_menu.events.EXIT)
-
+    game_over.add.button("Restart", game_cycle)
     game_over.mainloop(screen)
 
 
@@ -21,13 +21,13 @@ def game_cycle():
     clock = pygame.time.Clock()
 
     screen = pygame.display.set_mode((600, 600))
+    background = pygame.transform.scale(pygame.image.load("o_1b61g3upo10mv9a9fc1ogeq7i9.jpg"), (600, 600))
 
     add_enemy = pygame.USEREVENT + 1
     add_boost = pygame.USEREVENT + 2
 
     score_font = pygame.freetype.SysFont("Arial", 20)
     Health_font = pygame.freetype.SysFont("Arial", 20)
-    final_Score_font = pygame.freetype.SysFont("Arial", 40)
 
     pygame.time.set_timer(add_boost, 500)
     pygame.time.set_timer(add_enemy, 100)
@@ -42,6 +42,7 @@ def game_cycle():
     all_sprites = pygame.sprite.Group()
     bullets = pygame.sprite.Group()
     score_boosts = pygame.sprite.Group()
+    explosion = pygame.sprite.Group()
 
     all_sprites.add(player)
 
@@ -107,25 +108,22 @@ def game_cycle():
 
         # Updating the position of all groups
 
-        enemies.update()
-        bullets.update()
-        health_boosts.update()
-        bullets_boosts.update()
-        score_boosts.update()
+        all_sprites.update()
+        explosion.update()
 
         clock.tick(60)
 
-        screen.fill((0, 0, 0))
+        screen.blit(background, (0, 0))
 
         score_font.render_to(screen, (X_max / 2 - 50, 30), f"Score: {round(Score)}", (240, 255, 240))
         Health_font.render_to(screen, (X_max / 2 - 50, 550), f"Health: {player.health}", (240, 255, 240))
 
         for entity in all_sprites:
             screen.blit(entity.surf, entity.rect)
-
+        explosion.draw(screen)
         # Collision with objects
 
-        if pygame.sprite.spritecollide(player, enemies, True):
+        if pygame.sprite.spritecollide(player, enemies, True, pygame.sprite.collide_circle):
             if player.health - 1 == 0:
                 print("Game over")
                 print(Score)
@@ -158,9 +156,11 @@ def game_cycle():
         if time.perf_counter() - timer_boost_score >= 5:
             boosted = 1
 
-        if pygame.sprite.groupcollide(bullets, enemies, True, True):
+        expl = pygame.sprite.groupcollide(bullets, enemies, True, True)
+        for ex in expl:
             bonus += 10
-
+            expl = Explosion(ex.rect.center)
+            explosion.add(expl)
         # Calculation of score
 
         Score = (time.perf_counter() - time_start) * 100 * boosted + bonus + Score
