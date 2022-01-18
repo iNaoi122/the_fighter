@@ -2,7 +2,6 @@ import pygame
 import random
 import pygame.freetype
 
-
 X_max = 600
 Y_max = 600
 speed = int(10)
@@ -12,14 +11,17 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self):
         super(Player, self).__init__()
-        self.surf = pygame.Surface((40, 20))
-        self.surf.fill((255, 255, 255))
+        self.surf = pygame.transform.scale(pygame.image.load("Fighters/276274ea71933f0.png").convert(),
+                                           (80, 80))
+        self.surf.set_colorkey((255, 255, 255))
         self.rect = self.surf.get_rect(
             center=(
                 X_max / 2,
-                550
+                490
             )
         )
+        self.radius = 20
+        # pygame.draw.circle(self.surf, (255, 0, 0), (40, 40), self.radius)
         self.health = 3
 
     def _move_rect(self, x, y):
@@ -37,12 +39,8 @@ class Player(pygame.sprite.Sprite):
     def up(self, keys):
         if keys[pygame.K_LEFT]:
             self._move_rect(-speed, 0)
-        if keys[pygame.K_UP]:
-            self._move_rect(0, -speed)
         if keys[pygame.K_RIGHT]:
             self._move_rect(speed, 0)
-        if keys[pygame.K_DOWN]:
-            self._move_rect(0, speed)
 
     def pos_x(self):
         return self.rect.x
@@ -76,11 +74,34 @@ class Enemy(pygame.sprite.Sprite):
             self.kill()
 
 
+class Enemy_ships(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Enemy_ships, self).__init__()
+        self.speed = random.randint(1, 8)
+        self.surf = pygame.transform.scale(
+            pygame.image.load("Fighters/4415f4cb720fa4339dec3272527f16e2--star-wars-ships-star-wars-art.jpg").convert(),
+            (30, 30))
+        self.surf.set_colorkey((255, 255, 255))
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(0, X_max),
+                0
+            )
+        )
+        self.radius = 10
+        # pygame.draw.circle(self.surf, (255, 0, 0), (15, 15), self.radius)
+
+    def update(self):
+        self.rect.move_ip(0, self.speed)
+        if self.rect.bottom > Y_max:
+            self.kill()
+
+
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x_0, y_0, double=False):
+    def __init__(self, x_0, y_0, color, player=True, double=False):
         super(Bullet, self).__init__()
         self.surf = pygame.Surface((4, 10))
-        self.surf.fill((0, 0, 255))
+        self.surf.fill(color)
         if double:
             self.rect = self.surf.get_rect(
                 center=(x_0 + 10, y_0)
@@ -88,11 +109,17 @@ class Bullet(pygame.sprite.Sprite):
             self.rect = self.surf.get_rect(
                 center=(x_0 + 30, y_0)
             )
-        else:
+
+        if player:
+            self.speed = 10
             self.rect = self.surf.get_rect(
-                center=(x_0 + 20, y_0)
+                center=(x_0 + 40, y_0)
             )
-        self.speed = 10
+        else:
+            self.rect=self.surf.get_rect(
+                center=(x_0+15, y_0+10)
+            )
+            self.speed = -10
 
     def update(self):
         self.rect.move_ip(0, -self.speed)
@@ -179,7 +206,7 @@ class Explosion(pygame.sprite.Sprite):
         self.ex_anim = []
         for i in range(9):
             filename = 'regularExplosion0{}.png'.format(i)
-            img = pygame.image.load(f"Explosive/{filename}").convert()
+            img = pygame.image.load(f"Fighters/Explosive/{filename}").convert()
             img = pygame.transform.scale(img, (50, 50))
             img.set_colorkey((0, 0, 0))
             self.ex_anim.append(img)
